@@ -9,9 +9,8 @@ To export the criteria template from Monaco:
 
 The Monaco template is in XML format. This script will extract the relevant data and convert it into a JSON file that can be read by ProKnow.
 
-To use this script you have 2 options:
-1. RECOMMENDED: Click the 'JSONScorecard.exe' executable and just follow the steps through. The converted file will show up in the same directory as the .exe. 
-2. Run the Python script, which will bring up the GUI. You may alter the script however you wish if you need different functionality.
+To use this script simply run the Python script which will bring up the GUI.
+If you don't want to use Python, I can send you a link to an executable version. 
 
 
 NOTES:
