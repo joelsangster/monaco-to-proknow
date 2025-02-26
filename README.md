@@ -1,22 +1,22 @@
-# monaco-to-proknow
-Convert Monaco DVH Criteria Template (XML) into ProKnow Scorecard Template (JSON)
+# monaco-to-proknow-scorecard
+Convert Monaco DVH criteria (isodosesettings.xml) file into ProKnow Scorecard Template (JSON)
 This program is useful if you need to quickly create a scorecard that exactly matches your Monaco Dosimetric Criteria.
 
-To export the criteria template from Monaco:
-1. Go to the 'Statistics' tab under 'DVH Statistics'.
-2. Click 'Save as Template' in the top left.
-3. You can find your saved template in a folder called 'MonacoDvhCriteriaTemplates' wherever your Monaco data is stored.
+The isodosesettings.xml file is stored on the Monaco file system under the patient plan:
+e.g. \path-to-your-clinic\PATIENT_ID\plan\PLAN_NAME\isodosesettings.xml
 
-The Monaco template is in XML format. This script will extract the relevant data and convert it into a JSON file that can be read by ProKnow.
+This script will extract the relevant data and convert it into a JSON file that can be read by ProKnow.
 
-To use this script simply run the Python script which will bring up the GUI.
-If you don't want to use Python, I can send you a link to an executable version. 
-
+To run this script:
+1. Edit the config.ini file with the path to your Monaco installation folder.
+2. Run the Python script which will bring up the GUI.
+3. If the installetion folder in the config file is correct, the available clinic names will appear in the drop down.
 
 NOTES:
--The script does not create extra tolerance values that were not present in Monaco.
--There are 11 types of criteria in Monaco, but far more goal types in Proknow. Only the corresponding 11 are used. 
+-Compatible with Monaco versions 5 and 6.
 -The maximum precision for volumes in ProKnow is 0.01cc. So 0.035cc will be rounded to 0.04cc.
+-Since Proknow uses a different algorithm to calculate dose/volumes, the computed metrics may be slighlty different despite the objectives being exactly the same.
+I've never seen this take a result from pass to fail, but it's possible.
 -Feel free to alter the script or improve it however you wish!
 
 
@@ -24,7 +24,8 @@ Types available:
 "Monaco" : "ProKnow"
 "1": "MIN_DOSE_ROI",
 "2": "MAX_DOSE_ROI",
-"3": "MEAN_DOSE_ROI",
+"3": "MEAN_DOSE_ROI", #min
+"4": "MEAN_DOSE_ROI", # max
 "5": "DOSE_VOLUME_PERCENT_ROI",
 "6": "DOSE_VOLUME_CC_ROI",
 "7": "DOSE_VOLUME_PERCENT_ROI",
