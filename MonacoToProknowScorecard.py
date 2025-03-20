@@ -1,7 +1,7 @@
 from json import dump
-from os import scandir
+from os import scandir, path
 from xml.etree.ElementTree import parse
-from tkinter import Tk, END, WORD, ttk, messagebox, scrolledtext, StringVar
+from tkinter import Tk, END, WORD, ttk, messagebox, scrolledtext, StringVar, filedialog
 from configparser import ConfigParser
 
 """
@@ -27,6 +27,9 @@ installation = config.get("General", "installation_directory")
 # get list of clinics from installation directory
 clinics = [f.name for f in scandir(installation) if f.is_dir()]
 
+
+manual_file_path = ""
+
 def get_plans():
     while nhi_box != "":
         nhi = nhi_box.get()  # user enters NHI
@@ -48,6 +51,15 @@ def populate_plans(*args):
     # populate plan combobox
     plan_combobox['values'],plans_dir = get_plans()
 
+def load_file_dialog():
+    global manual_file_path
+    manual_file_path = filedialog.askopenfilename(
+         title="Select an XML file",
+         filetypes=[("XML files", "*.xml")])
+    # get just the file name
+    #dir, file = path.split(manual_file_path)
+    # place the xml file name in the text box
+    XML_box.insert(index=0, string=manual_file_path)
 
 # create lookup table to cross-reference goal types
 type_lookup = { "1": "MIN_DOSE_ROI",
@@ -66,9 +78,12 @@ type_lookup = { "1": "MIN_DOSE_ROI",
 
 
 def convert(output_filename):
-    _, plan_dir = get_plans()
-    xml_file_path = fr'{plan_dir}\{plan_str_var.get()}\isodosesettings.xml'
-    print(xml_file_path)
+    global manual_file_path
+    if manual_file_path != "":
+        xml_file_path = manual_file_path
+    else:
+        _, plan_dir = get_plans()
+        xml_file_path = fr'{plan_dir}\{plan_str_var.get()}\isodosesettings.xml'
 
     if output_filename != "":
         # enter the file name as a header
@@ -376,6 +391,11 @@ def convert(output_filename):
 
         # remove text from boxes
         out_box.delete(0,END)
+        XML_box.delete(0, END)
+        nhi_box.delete(0,END)
+        plan_combobox.delete(0, END)
+        clinic_combobox.delete(0, END)
+        manual_file_path = ""
         messagebox.showinfo("Success!", message=f"Scorecard Template saved as: {output_filename}.json")
 
 
@@ -389,50 +409,58 @@ ttk.Style().theme_use("clam")
 
 # create clinic label
 clinic_label = ttk.Label(window, text="Select Clinic:")
-clinic_label.grid(row=0, columnspan=2, pady=10)
+clinic_label.grid(row=0, column=0, pady=10)
 
 # create clinic dropdown
 clinic_combobox = ttk.Combobox(window)
-clinic_combobox.grid(row=1, columnspan=2, pady=10)
+clinic_combobox.grid(row=1, column=0, pady=10)
 #populate the combobox with the clinics we found earlier
 clinic_combobox['values'] = clinics
 
 
 # create nhi label
 nhi_label = ttk.Label(window, text="Enter patient ID:")
-nhi_label.grid(row=2, columnspan=2, pady=10)
+nhi_label.grid(row=0, column=1, pady=10)
 # create NHI entry box
 nhi_str_var = StringVar(window)
 nhi_str_var.trace("w", populate_plans)
 nhi_box = ttk.Entry(window, width=25, textvariable=nhi_str_var)
-nhi_box.grid(row=3, columnspan=2)
+nhi_box.grid(row=1, column=1)
 
 # create plan label
 plan_label = ttk.Label(window, text="Select Plan:")
-plan_label.grid(row=4, columnspan=2, pady=10)
+plan_label.grid(row=0, column=2, pady=10)
 # create plan dropdown
 plan_str_var = StringVar(window)
 plan_combobox = ttk.Combobox(window, textvariable=plan_str_var)
-plan_combobox.grid(row=5, columnspan=2, pady=10)
+plan_combobox.grid(row=1, column=2, pady=10)
+
+s = ttk.Separator(window, orient="horizontal")
+
+# create file selector button.
+select_button = ttk.Button(window, text="OR: Select File", state="enabled", command=lambda: load_file_dialog())
+select_button.grid(row=2, column=1, pady=10)
+XML_box = ttk.Entry(window, width=30)
+XML_box.grid(row=3, column=1, columnspan=2, sticky='w')
 
 
 # create label
 file_label = ttk.Label(window, text="Enter scorecard file name:")
-file_label.grid(row=6, columnspan=2, pady=10)
+file_label.grid(row=6, columnspan=3, pady=10)
 
 # Create the entry box
 out_box = ttk.Entry(window, width=25)
-out_box.grid(row=7, column=0, sticky="e")
+out_box.grid(row=7, column=1)
 
 # create .json label
 json_label = ttk.Label(window, text=".json", anchor="w")
-json_label.grid(row=7, column=1, sticky="w")
+json_label.grid(row=7, column=2, sticky="w")
 # create generate button which is disabled until the XML is selected
 button = ttk.Button(window, text="Generate", state="enabled", command=lambda: convert(out_box.get()))
-button.grid(row=8, columnspan=2, pady=10)
+button.grid(row=8, columnspan=3, pady=10)
 
 # Create the text box for logging (with scroll functionality)
-structures_box = scrolledtext.ScrolledText(window, width=60, height=10, wrap=WORD)
-structures_box.grid(row=9, columnspan=2)
+structures_box = scrolledtext.ScrolledText(window, width=60, height=14, wrap=WORD)
+structures_box.grid(row=9, columnspan=3)
 
 window.mainloop()
