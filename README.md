@@ -14,6 +14,7 @@ To run this script:
 
 NOTES:
 -Compatible with Monaco versions 5 and 6.
+- WIP for Eclipse compatibility.
 -The maximum precision for volumes in ProKnow is 0.01cc. So 0.035cc will be rounded to 0.04cc.
 -Since Proknow uses a different algorithm to calculate dose/volumes, the computed metrics may be slighlty different despite the objectives being exactly the same.
 I've never seen this take a result from pass to fail, but it's possible.
