@@ -1,7 +1,7 @@
 from json import dump
 from os import scandir, path
 from xml.etree.ElementTree import parse
-from tkinter import Tk, END, WORD, ttk, messagebox, scrolledtext, StringVar, filedialog
+from tkinter import Tk, END, WORD, ttk, messagebox, scrolledtext, StringVar, filedialog, IntVar
 from configparser import ConfigParser
 
 """
@@ -96,9 +96,23 @@ def convert(output_filename):
         tree = parse(xml_file_path)
         root = tree.getroot()
 
+        # add MU if box is checked
+        if CheckVarMU.get() == 1:
+            mudict = {"type": "CUMULATIVE_METERSET", "roi_name": None, "arg_1": None, "arg_2": None, "rx": None, "rx_scale": None}
+            goaldict_list.append(mudict)
+            structures_box.insert(END, f"Plan MUs\n")
+
         # loop through all structures
         for struct in root.find("Data").find("IsodoseSettings").find("DoseStructureParametersList").findall("DoseStructureParameter"):
             structure_name = struct.find("StructureName").text
+            print(struct.find("DoseGoalList").findall("DoseGoal"))
+
+            # get the volume of the structure if the button is selected and the structure is enabled in Monaco
+            if CheckVarVols.get() == 1 and struct.find("Enabled").text == "1":
+                voldict = {"type": "VOLUME", "roi_name": structure_name, "arg_1":None,"arg_2":None,"rx":None,"rx_scale":None}
+                goaldict_list.append(voldict)
+                structures_box.insert(END, f"Volume of:  {structure_name}\n")
+
             goals = struct.find("DoseGoalList").findall("DoseGoal")
             # loop through all goals in the structure
             for goal in goals:
@@ -129,7 +143,6 @@ def convert(output_filename):
                         # add in the new line with the tol included
                         structures_box.insert(END, f"Min Dose to {structure_name}: {dose}Gy (-{tol})\n")
                     goaldict["objectives"] = objectives
-                    # print the goal to the text box
 
 
                 # Max Dose Roi: D <= Gy
@@ -232,7 +245,7 @@ def convert(output_filename):
                     objectives = [{"label": "FAIL", "color": [255, 0, 0]},
                                   {"label": "PASS", "color": [18, 191, 0], "min": dose}]
                     structures_box.insert(END,
-                                     f"D{vol}% >= {dose}Gy\n")
+                                     f"{structure_name}: D{vol}% >= {dose}Gy\n")
                     if goal.find("Tolerance").text != "0": #  DtoVol% >= Gy(-Gy)
                         tol = float(goal.find("Tolerance").text) / 100
                         objectives.insert(1, {"label": "WARNING", "color": [255, 216, 0],
@@ -251,7 +264,7 @@ def convert(output_filename):
                     objectives = [{"label": "FAIL", "color": [255, 0, 0]},
                                   {"label": "PASS", "color": [18, 191, 0], "min": dose}]
                     structures_box.insert(END,
-                                     f"D{vol}cc >= {dose}Gy\n")
+                                     f"{structure_name}: D{vol}cc >= {dose}Gy\n")
                     if goal.find("Tolerance").text != "0": #  DtoVolcc >= Gy(-Gy)
                         tol = float(goal.find("Tolerance").text) / 100
                         objectives.insert(1, {"label": "WARNING", "color": [255, 216, 0],
@@ -402,7 +415,7 @@ def convert(output_filename):
 #create GUI window
 window = Tk()
 window.title("Monaco to ProKnow Scorecard")
-window.geometry("500x500")
+window.geometry("500x550")
 
 # Set the theme with the theme_use method
 ttk.Style().theme_use("clam")
@@ -442,6 +455,15 @@ select_button = ttk.Button(window, text="OR: Select File", state="enabled", comm
 select_button.grid(row=2, column=1, pady=10)
 XML_box = ttk.Entry(window, width=30)
 XML_box.grid(row=3, column=1, columnspan=2, sticky='w')
+
+# add MUs button
+CheckVarMU = IntVar()
+mu_button = ttk.Checkbutton(window, text = "Include MU?", variable = CheckVarMU, onvalue=1, offvalue=0)
+mu_button.grid(row=4, column=0, pady=10)
+# add all structure volumes button
+CheckVarVols = IntVar()
+vols_button = ttk.Checkbutton(window, text = "Include all structure volumes?", variable = CheckVarVols, onvalue=1, offvalue=0)
+vols_button.grid(row=4, column=1, pady=10)
 
 
 # create label
