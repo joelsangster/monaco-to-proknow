@@ -5,9 +5,11 @@ This program is useful if you need to quickly create a scorecard that exactly ma
 The isodosesettings.xml file is stored on the Monaco file system under the patient plan:  
 e.g. \path-to-your-clinic\PATIENT_ID\plan\PLAN_NAME\isodosesettings.xml  
 
-This script will extract the relevant data and convert it into a JSON file that can be read by ProKnow.  
+This script will extract the relevant data and convert it into a JSON file that can be read by ProKnow.   
 
-To run this script:
+<img width="676" height="685" alt="image" src="https://github.com/user-attachments/assets/174c16a3-3740-4ab3-a70b-da4555f9ab5c" />  
+
+To run this script:  
 1. Edit the config.ini file with the path to your Monaco installation folder.  
 2. Run the Python script which will bring up the GUI.   
 3. If the installation folder in the config file is correct, the available clinic names will appear in the drop down.  
