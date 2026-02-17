@@ -1,5 +1,5 @@
 # monaco-to-proknow-scorecard
-Convert Monaco DVH criteria (isodosesettings.xml) file into ProKnow Scorecard Template (JSON)  
+Convert Monaco DVH criteria (isodosesettings.xml) into a ProKnow Scorecard Template (JSON)  
 This program is useful if you need to quickly create a scorecard that exactly matches your Monaco Dosimetric Criteria.  
 
 The isodosesettings.xml file is stored on the Monaco file system under the patient plan:  
@@ -18,12 +18,10 @@ To run this script:
     
 
 NOTES:  
--Compatible with Monaco versions 5 and 6.  
+- Compatible with Monaco versions 5 and 6.  
 - WIP for Eclipse compatibility.  
--The maximum precision for volumes in ProKnow is 0.01cc. So 0.035cc will be rounded to 0.04cc.  
--Since Proknow uses a different algorithm to calculate dose/volumes, the computed metrics may be slighlty different despite the objectives being exactly the same.  
-I've never seen this take a result from pass to fail, but it's possible.  
--Feel free to alter the script or improve it however you wish!  
+- The maximum precision for volumes in ProKnow is 0.01cc. So 0.035cc will be rounded to 0.04cc.  
+- Proknow uses a different algorithm to calculate dose/volumes, the computed metrics may be slighlty different despite the objectives being exactly the same. I've never seen this take a result from pass to fail, but it's possible.  
 
 
 Types available:  
