@@ -3,6 +3,10 @@ from os import scandir, path
 from xml.etree.ElementTree import parse
 from tkinter import Tk, END, WORD, ttk, messagebox, scrolledtext, StringVar, filedialog, IntVar
 from configparser import ConfigParser
+import sv_ttk
+
+
+
 
 """
 Author: Joel Sangster
@@ -32,7 +36,7 @@ manual_file_path = ""
 
 def get_plans():
     while nhi_box != "":
-        nhi = nhi_box.get()  # user enters NHI
+        nhi = nhi_box.get().upper()  # user enters NHI
         # search clinic dir for patients
         patients = [f.path for f in scandir(f'{installation}\\{clinic_combobox.get()}') if f.is_dir()]
         patient_dir = None
@@ -92,6 +96,8 @@ def convert(output_filename):
         structures_box.insert(END, "------------------\n")
         # initialise list of goals
         goaldict_list = []
+        # initialise list of goals
+        voldict_list = []
         # Parse the contents of the selected XML file
         tree = parse(xml_file_path)
         root = tree.getroot()
@@ -110,7 +116,7 @@ def convert(output_filename):
             # get the volume of the structure if the button is selected and the structure is enabled in Monaco
             if CheckVarVols.get() == 1 and struct.find("Enabled").text == "1":
                 voldict = {"type": "VOLUME", "roi_name": structure_name, "arg_1":None,"arg_2":None,"rx":None,"rx_scale":None}
-                goaldict_list.append(voldict)
+                voldict_list.append(voldict)
                 structures_box.insert(END, f"Volume of:  {structure_name}\n")
 
             goals = struct.find("DoseGoalList").findall("DoseGoal")
@@ -397,10 +403,19 @@ def convert(output_filename):
         # add the list of goals to the scorecard dict
         scorecard = {"computed": goaldict_list,
                      "custom": []}
+        
+        # add the list of volumes to the volumes scorecard dict
+        volumes_scorecard = {"computed": voldict_list,
+                     "custom": []}
 
-        # Write the dictionary to a JSON file
+        # Write the goals dictionary to a JSON file
         with open(f"{output_filename}.json", "w") as json_file:
             dump(scorecard, json_file, indent=2)
+
+        # Write the volumes dictionary to a JSON file
+        if CheckVarVols.get() == 1:
+            with open(f"{output_filename}_Volumes.json", "w") as json_file:
+                dump(volumes_scorecard, json_file, indent=2)
 
         # remove text from boxes
         out_box.delete(0,END)
@@ -414,11 +429,9 @@ def convert(output_filename):
 
 #create GUI window
 window = Tk()
-window.title("Monaco to ProKnow Scorecard")
-window.geometry("500x550")
+window.title("ProKnow Scorecard Generator")
+window.geometry("670x650")
 
-# Set the theme with the theme_use method
-ttk.Style().theme_use("clam")
 
 # create clinic label
 clinic_label = ttk.Label(window, text="Select Clinic:")
@@ -426,7 +439,7 @@ clinic_label.grid(row=0, column=0, pady=10)
 
 # create clinic dropdown
 clinic_combobox = ttk.Combobox(window)
-clinic_combobox.grid(row=1, column=0, pady=10)
+clinic_combobox.grid(row=1, column=0, pady=10, padx=5)
 #populate the combobox with the clinics we found earlier
 clinic_combobox['values'] = clinics
 
@@ -438,7 +451,7 @@ nhi_label.grid(row=0, column=1, pady=10)
 nhi_str_var = StringVar(window)
 nhi_str_var.trace("w", populate_plans)
 nhi_box = ttk.Entry(window, width=25, textvariable=nhi_str_var)
-nhi_box.grid(row=1, column=1)
+nhi_box.grid(row=1, column=1, padx=5)
 
 # create plan label
 plan_label = ttk.Label(window, text="Select Plan:")
@@ -446,7 +459,7 @@ plan_label.grid(row=0, column=2, pady=10)
 # create plan dropdown
 plan_str_var = StringVar(window)
 plan_combobox = ttk.Combobox(window, textvariable=plan_str_var)
-plan_combobox.grid(row=1, column=2, pady=10)
+plan_combobox.grid(row=1, column=2, pady=10, padx=5)
 
 s = ttk.Separator(window, orient="horizontal")
 
@@ -462,7 +475,7 @@ mu_button = ttk.Checkbutton(window, text = "Include MU?", variable = CheckVarMU,
 mu_button.grid(row=4, column=0, pady=10)
 # add all structure volumes button
 CheckVarVols = IntVar()
-vols_button = ttk.Checkbutton(window, text = "Include all structure volumes?", variable = CheckVarVols, onvalue=1, offvalue=0)
+vols_button = ttk.Checkbutton(window, text = "Create volumes scorecard?", variable = CheckVarVols, onvalue=1, offvalue=0)
 vols_button.grid(row=4, column=1, pady=10)
 
 
@@ -484,5 +497,7 @@ button.grid(row=8, columnspan=3, pady=10)
 # Create the text box for logging (with scroll functionality)
 structures_box = scrolledtext.ScrolledText(window, width=60, height=14, wrap=WORD)
 structures_box.grid(row=9, columnspan=3)
+
+sv_ttk.set_theme("dark")  # Set the theme to dark mode
 
 window.mainloop()
